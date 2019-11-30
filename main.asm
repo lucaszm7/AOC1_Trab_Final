@@ -124,6 +124,21 @@ COLISOES:
 
 and $v0, $v0, $zero
 add $v0, $v0, $t3 # POSICAO
+
+li $v1, 512
+
+slt $t9, $v0, $v1
+bne $t9, $zero, main
+
+div $v0, $v1
+mfhi $v1
+beq $v1, $zero, main
+
+li $v1, 31216
+div $v1, $v0
+mfhi $v1
+beq $v1, $zero, main
+
 li $v1, 0
 beq $v0, $v1, main
 li $v1, 496    # TEM 32 QUADRADINHOS DE LARGURA
