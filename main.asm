@@ -3,7 +3,6 @@
 # <INSERIR NOME DO PROJETO>
 
 .data
-novalinha: .asciiz "\n"
 
 .text
 j main
@@ -25,12 +24,10 @@ li $t1, 4 # ALTURA (FIXA)
 li $t2, 1 # TAMANHO VARIAVEL
 li $t3, 16640 # POSICAO DA CABEÇA
 
-li $t4, 0 # PONTUAÇÃO
-lui $a3, 0xffff
-addi $a3, $a3, 12
-sw $t4, 0($a3)
-
+li $t4, -1 # PONTUAÇÃO
+lui $a3, 0x1001
 jr $ra
+
 
 DESENHA_FUNDO:
 and $s0, $s0, $zero
@@ -103,14 +100,12 @@ jr $ra
 
 
 DESENHA_COBRA:
-add $s0, $s0, $t3 # POSICAO
-sw $t3, 0($sp)
-addi $sp, $sp, -4
-DESENHA_PEDACO:
+
 move $a1, $t1 # ALTURA
 and $s0, $s0, $zero
 lui $s0, 0x1000
 add $s0, $s0, $t3 # POSICAO
+
 DESENHA_COLUNA_COBRA:
 mul $a0, $t2, $t0 # TAMANHO DA COBRA
 DESENHA_LINHA_COBRA:
@@ -125,26 +120,54 @@ addi $t5, $t5, -512
 mul $t5, $t5, -1
 add $s0, $s0, $t5
 bne $a1, $zero, DESENHA_COLUNA_COBRA
+j DESENHA_PEDACOS
+
+
+DESENHA_PEDACOS:
+move $t6, $t4
+beq $t6, $zero, DESENHA_PEDACOS_FIM
+lui $t7, 0x1001
+DESENHA_PEDACO_2:
+move $a1, $t1 # ALTURA
+and $s0, $s0, $zero
+lui $s0, 0x1000
+lw $v0, 0($t7)
+add $s0, $s0, $v0 # POSICAO
+DESENHA_COLUNA_PEDACO:
+mul $a0, $t2, $t0 # TAMANHO DA COBRA
+DESENHA_LINHA_PEDACO:
+sw $s5, 0($s0)
+addi $s0, $s0, 4
+addi $a0, $a0, -1
+bne $a0, $zero, DESENHA_LINHA_PEDACO
+addi $a1, $a1, -1
+mul $t5, $t0, $t1
+mul $t5, $t5, $t2
+addi $t5, $t5, -512
+mul $t5, $t5, -1
+add $s0, $s0, $t5
+bne $a1, $zero, DESENHA_COLUNA_PEDACO
+
+addi $t6, $t6, -1
+addi $t7, $t7, 4
+bne $t6, $zero, DESENHA_PEDACO_2
+DESENHA_PEDACOS_FIM:
 jr $ra
 
 
 COBRA_ESQUERDA:
-sw $t3, 0($sp)
 addi $t3, $t3, -16
 jr $ra
 
 COBRA_DIREITA:
-sw $t3, 0($sp)
 addi $t3, $t3, 16
 jr $ra
 
 COBRA_CIMA:
-sw $t3, 0($sp)
 addi $t3, $t3, -2048
 jr $ra
 
 COBRA_BAIXO:
-sw $t3, 0($sp)
 addi $t3, $t3, 2048
 jr $ra
 
@@ -175,6 +198,40 @@ addi $t5, $t5, -512
 mul $t5, $t5, -1
 add $s0, $s0, $t5
 bne $a1, $zero, APAGA_COLUNA_COBRA
+j APAGA_PEDACO
+
+
+APAGA_PEDACO:
+move $t6, $t4
+beq $t6, $zero, APAGA_PEDACOS_FIM
+lui $t7, 0x1001
+APAGA_PEDACO_2:
+
+move $a1, $t1 # ALTURA
+and $s0, $s0, $zero
+lui $s0, 0x1000
+lw $v0, 0($t7)
+add $s0, $s0, $v0 # POSICAO
+APAGA_COLUNA_PEDACO:
+mul $a0, $t2, $t0 # TAMANHO DA COBRA
+APAGA_LINHA_PEDACO:
+sw $s3, 0($s0)
+addi $s0, $s0, 4
+addi $a0, $a0, -1
+bne $a0, $zero, APAGA_LINHA_PEDACO
+addi $a1, $a1, -1
+mul $t5, $t0, $t1
+mul $t5, $t5, $t2
+addi $t5, $t5, -512
+mul $t5, $t5, -1
+add $s0, $s0, $t5
+bne $a1, $zero, APAGA_COLUNA_PEDACO
+
+addi $t6, $t6, -1
+addi $t7, $t7, 4
+bne $t6, $zero, APAGA_PEDACO_2
+APAGA_PEDACOS_FIM:
+
 jr $ra
 
 
@@ -197,10 +254,6 @@ li $v0, 30720
 li $v1, 1
 slt $t9, $v0, $t3
 beq $t9, $v1, main
-
-lui $a0, 0x1001
-li $v0, 4
-syscall
 
 li $v0, 2048
 li $v1, 2544
@@ -275,6 +328,30 @@ beq $s7, $t3, MACA_INIT
 jr $ra
 
 
+ATT_POSICOES:
+move $v1, $t4
+move $t5, $v1
+#beq $t5, $zero, ATT_POSICOES_FIM
+#addi $t5, $t5, -1
+li $t6, 4
+
+ATT_POSICOES_2:
+beq $v1, $zero, ATT_POSICOES_FIM
+lui $v0, 0x1001
+mul $t7, $t6, $v1
+add $v0, $v0, $t7
+lw $t7, -4($v0)
+sw $t7, 0($v0)
+addi $v1, $v1, -1
+addi $v0, $v0, -4
+j ATT_POSICOES_2
+
+ATT_POSICOES_FIM:
+lui $v0, 0x1001
+sw $t3, 0($v0)
+jr $ra 
+
+
 main:
 jal DEF_INICIAL
 jal DEF_COR
@@ -283,7 +360,7 @@ jal DESENHA_BORDAS
 
 MACA_INIT:
 addi $t4, $t4, 1
-sw $t4, 0($a3)
+#jal ATT_POSICOES
 # jal SHOW_PONTUACAO
 jal SET_MACA
 jal DESENHA_MACA
@@ -292,6 +369,7 @@ LOOP:
 jal DESENHA_COBRA
 jal DELAY
 jal APAGA_COBRA
+jal ATT_POSICOES
 jal MOVEMENT
 jal COLISOES
 bne $v0, $v1, LOOP
