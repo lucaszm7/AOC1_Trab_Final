@@ -198,11 +198,6 @@ li $v1, 1
 slt $t9, $v0, $t3
 beq $t9, $v1, main
 
-# === PRINT === #
-move $a0, $t3
-li $v0, 1
-syscall
-
 lui $a0, 0x1001
 li $v0, 4
 syscall
