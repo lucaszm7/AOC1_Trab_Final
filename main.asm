@@ -268,6 +268,19 @@ div $t9, $v0
 mfhi $v1
 beq $v1, $zero, main
 
+# === COBRA === #
+move $v0, $t4
+lui $v1, 0x1001
+beq $v0, $zero, FIM_COLISAO_CORPO_CORBRA
+COLISAO_CORPO_COBRA:
+
+lw $t5, 0($v1)
+beq $t5, $t3, main
+
+addi $v1, $v1, 4
+addi $v0, $v0, -1
+bne $v0, $zero, COLISAO_CORPO_COBRA
+FIM_COLISAO_CORPO_CORBRA:
 jr $ra
 
 
