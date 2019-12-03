@@ -174,7 +174,7 @@ jr $ra
 
 DELAY:
 li $v0, 32
-li $t7, -10
+li $t7, -3
 move $t6, $t4
 mul $t6, $t6, $t7
 li $a0, 200 # 200 EH O IDEAL
